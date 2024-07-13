@@ -17,8 +17,6 @@ const (
 func InitializeTransaction(ctx context.Context) context.Context {
 	trnID := uuid.New().String()
 	trnTime := time.Now().Format(time.RFC3339)
-
-	// コンテキストにトランザクションIDとトランザクション時間を設定
 	ctx = context.WithValue(ctx, TrnIDKey, trnID)
 	ctx = context.WithValue(ctx, TrnTimeKey, trnTime)
 	return ctx

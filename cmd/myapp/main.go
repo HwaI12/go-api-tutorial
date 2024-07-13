@@ -10,28 +10,23 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
 
 	"github.com/HwaI12/go-api-tutorial/api"
-	"github.com/HwaI12/go-api-tutorial/internal/Log"
+	"github.com/HwaI12/go-api-tutorial/internal/logger"
 	"github.com/HwaI12/go-api-tutorial/internal/transaction"
 	"github.com/HwaI12/go-api-tutorial/pkg/database"
 )
 
 func main() {
 	// ロガーの初期化
-	Log.InitializeLogger()
+	logger.InitializeLogger()
 
 	// トランザクションの初期化
 	ctx := context.Background()
 	ctx = transaction.InitializeTransaction(ctx)
 
 	// ログエントリの作成とトランザクション情報の追加
-	entry := logrus.WithContext(ctx)
-	entry = entry.WithFields(logrus.Fields{
-		"trn_id":   ctx.Value(transaction.TrnIDKey),
-		"trn_time": ctx.Value(transaction.TrnTimeKey),
-	})
+	entry := logger.WithTransaction(ctx)
 
 	entry.Info(".envファイルの読み込みを開始します")
 	err := godotenv.Load()
@@ -42,7 +37,7 @@ func main() {
 	}
 
 	entry.Info("データベースに接続します")
-	db, err := database.Connect()
+	db, err := database.Connect(ctx)
 	if err != nil {
 		entry.WithError(err).Fatal("データベースへの接続に失敗しました")
 	} else {
@@ -67,6 +62,7 @@ func main() {
 			entry.WithError(err).Fatal("サーバーの起動に失敗しました")
 		}
 	}()
+	entry.Info("サーバーが正常に起動しました")
 	fmt.Printf("http://localhost:8080 でサーバーが起動しました\n")
 
 	// シグナルを待つ

@@ -2,6 +2,8 @@ package models
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -13,59 +15,39 @@ type Book struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func GetAllBooks(db *sql.DB) ([]Book, error) {
-	// データベースから全ての本を取得するSQLクエリ
-	query := "SELECT * FROM books"
-
-	// データベースにクエリを送信し、結果を取得
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
+func (b *Book) Validate() error {
+	if b.Name == "" {
+		return errors.New("本の名前が空です")
 	}
-
-	// 関数が終了した際にrowsを閉じる
-	defer rows.Close()
-
-	// 取得した本を格納するスライス
-	books := []Book{}
-
-	// 取得したデータをスライスに格納
-	for rows.Next() {
-		var book Book
-		// 取得したデータをbook構造体に格納
-		if err := rows.Scan(&book.ID, &book.Name, &book.Price, &book.CreatedAt); err != nil {
-			return nil, err
-		}
-		// スライスに本を追加
-		books = append(books, book)
+	if len(b.Name) > 50 {
+		return errors.New("本の名前が長すぎます。50文字以内で書いてください")
 	}
-
-	// エラーが発生した場合はエラーを返す
-	return books, nil
+	if b.Price <= 0 {
+		return errors.New("本の値段が空です。1文字以上書いてください")
+	}
+	if b.Price > 20000 {
+		return errors.New("本の値段が高すぎます。20000円以内で書いてください")
+	}
+	return nil
 }
 
 func (b *Book) CreateBook(db *sql.DB) error {
-	// データベースに新しい本を追加するためのSQLクエリ
 	stmt, err := db.Prepare("INSERT INTO books(name, price) VALUES(?, ?)")
 	if err != nil {
-		return err
+		return fmt.Errorf("SQLステートメントの準備に失敗しました: %v", err)
 	}
-	defer db.Close()
+	defer stmt.Close()
 
-	// データベースに新しい本を追加
 	result, err := stmt.Exec(b.Name, b.Price)
 	if err != nil {
-		return err
+		return fmt.Errorf("データベースへの挿入に失敗しました: %v", err)
 	}
 
-	// 最後に追加された本のIDを取得
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
-		return err
+		return fmt.Errorf("最後に挿入されたIDの取得に失敗しました: %v", err)
 	}
 
-	// 本のIDを構造体に設定
-	// strconv.FormatIntはint64型を文字列に変換する関数
 	b.ID = strconv.FormatInt(lastInsertId, 10)
 	b.CreatedAt = time.Now()
 
