@@ -1,27 +1,36 @@
 # go-api-tutorial
 
 簡単にGo言語とMySQLで欲しい本の名前や値段などの情報を管理するAPIを作成してみた！
+## メモ
+[memo.md](https://github.com/HwaI12/go-api-tutorial/blob/main/memo.md)
 
 ## ディレクトリ構成
 ```sh
 .
+├── README.md
 ├── api
 │   └── routes.go
 ├── cmd
 │   └── myapp
 │       └── main.go
-├── internal
-│   ├── controllers
-│   │   └── book_controller.go
-│   ├── models
-│   │   └── book.go
-│   ├── views
-│   │   └── responses.go
-│   └── errors
-│       └── custom_errors.go
 ├── go.mod
 ├── go.sum
-├── .env
+├── internal
+│   ├── Log
+│   │   └── logger.go
+│   ├── controllers
+│   │   └── book_controller.go
+│   ├── errors
+│   │   └── custom_errors.go
+│   ├── middleware
+│   │   └── auth_middleware.go
+│   ├── models
+│   │   └── book.go
+│   ├── transaction
+│   │   └── transaction.go
+│   └── views
+│       └── responses.go
+├── memo.md
 └── pkg
     └── database
         └── database.go

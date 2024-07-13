@@ -1,24 +1,55 @@
+- [学習メモ](#学習メモ)
+  - [ディレクトリ構成](#ディレクトリ構成)
+  - [MVCモデルとは](#mvcモデルとは)
+  - [ListenAndServe](#listenandserve)
+  - [カスタムエラー処理](#カスタムエラー処理)
+    - [エラーコード](#エラーコード)
+    - [エラーコードとメッセージ](#エラーコードとメッセージ)
+    - [エラーコードレベル](#エラーコードレベル)
+    - [分類コードレベル](#分類コードレベル)
+    - [エラーメッセージ](#エラーメッセージ)
+      - [パラメータ存在チェック](#パラメータ存在チェック)
+      - [中身検証チェック](#中身検証チェック)
+        - [Noneの場合](#noneの場合)
+        - [型](#型)
+        - [空で渡されてる場合](#空で渡されてる場合)
+        - [制限](#制限)
+        - [データベースエラー](#データベースエラー)
+      - [予期しないエラー](#予期しないエラー)
+      - [APIキー](#apiキー)
+      - [データベースと連携](#データベースと連携)
+    - [エラーの定義](#エラーの定義)
+  - [MySQL](#mysql)
+  - [ログの追加](#ログの追加)
+
 # 学習メモ
 ## ディレクトリ構成
 ```sh
 .
+├── README.md
 ├── api
 │   └── routes.go
 ├── cmd
 │   └── myapp
 │       └── main.go
-├── internal
-│   ├── controllers
-│   │   └── book_controller.go
-│   ├── models
-│   │   └── book.go
-│   ├── views
-│   │   └── responses.go
-│   └── errors
-│       └── custom_errors.go
 ├── go.mod
 ├── go.sum
-├── .env
+├── internal
+│   ├── Log
+│   │   └── logger.go
+│   ├── controllers
+│   │   └── book_controller.go
+│   ├── errors
+│   │   └── custom_errors.go
+│   ├── middleware
+│   │   └── auth_middleware.go
+│   ├── models
+│   │   └── book.go
+│   ├── transaction
+│   │   └── transaction.go
+│   └── views
+│       └── responses.go
+├── memo.md
 └── pkg
     └── database
         └── database.go
@@ -55,10 +86,20 @@ ListenAndServeとは、指定したアドレスとポートでHTTPサーバを�
 
 ## カスタムエラー処理
 ### エラーコード
+データベースエラーのステータスコードは一般的に500番（内部サーバーエラー）を使用します。これはサーバー内部で予期しないエラーが発生した場合に使用されるステータスコードです。以下は、データベース関連のエラーに対応するステータスコードの一覧です。
+
+### エラーコードとメッセージ
+
 |エラーコード|ステータスコード|エラーメッセージ|
 |---|---|---|
 |GOTA-Z-000-00|500|予測不能エラーです|
 |GOTA-X-001-00|500|データベースエラーです。もう一度お試しください。|
+|GOTA-X-001-01|500|データベースクエリの実行に失敗しました|
+|GOTA-X-001-02|500|データベース結果のスキャンに失敗しました|
+|GOTA-X-001-03|500|データベース結果のクローズに失敗しました|
+|GOTA-X-001-04|500|SQLステートメントの準備に失敗しました|
+|GOTA-X-001-05|500|データベースへの挿入に失敗しました|
+|GOTA-X-001-06|500|最後に挿入されたIDの取得に失敗しました|
 |GOTA-W-011-00|400|パラメータ'name'がありません。|
 |GOTA-W-011-01|400|パラメータ'price'がありません。|
 |GOTA-W-011-02|400|本の名前がありません。|
@@ -69,7 +110,8 @@ ListenAndServeとは、指定したアドレスとポートでHTTPサーバを�
 |GOTA-W-011-07|400|本の値段が空です。1文字以上書いてください。|
 |GOTA-W-011-08|400|本の名前が長すぎます。50文字以内で書いてください。|
 |GOTA-W-011-09|400|本の値段が高すぎます。20000円以内で書いてください。|
-|GOTA-W-021-00|401|APIキーが無効です。|
+|GOTA-W-021-00|401|APIキーが空です。|
+|GOTA-W-021-01|401|APIキーが無効です。|
 
 ### エラーコードレベル
 |レベルコード|状態|
@@ -122,35 +164,48 @@ ListenAndServeとは、指定したアドレスとポートでHTTPサーバを�
 - 予測不能エラーです。
 
 #### APIキー
+- APIキーが空です。
 - APIキーが無効です。
 
 #### データベースと連携
-- データベースエラーです。もう一度お試しください。
+- データベースクエリの実行に失敗しました
+- データベース結果のスキャンに失敗しました
+- データベース結果のクローズに失敗しました
+- SQLステートメントの準備に失敗しました
+- データベースへの挿入に失敗しました
+- 最後に挿入されたIDの取得に失敗しました
 
 
 ### エラーの定義
 `internal/errors/custom_errors.go`に記載
 
-今の書き方と以下の書き方どっちがいいんだろう
 ```go
+func (e *UserDefinedError) Error() string {
+	return fmt.Sprintf("[%d] [%s] %s", e.HTTPStatusCode, e.ErrorCode, e.ErrorMessage)
+}
+
+func UnexpectedError() *UserDefinedError {
+	return &UserDefinedError{"GOTA-Z-000-00", "予測不能エラーです", http.StatusInternalServerError}
+}
+
+func DatabaseError() *UserDefinedError {
+	return &UserDefinedError{"GOTA-X-001-00", "データベースエラーです。もう一度お試しください。", http.StatusInternalServerError}
+}
+
+・・・
+```
+
+```go
+func (e *UserDefinedError) Error() string {
+	return fmt.Sprintf("[%d] [%s] %s", e.HTTPStatusCode, e.ErrorCode, e.ErrorMessage)
+}
+
 var (
 	UnexpectedError          = &UserDefinedError{"GOTA-Z-000-00", "予測不能エラーです", http.StatusInternalServerError}
 	DatabaseError            = &UserDefinedError{"GOTA-X-001-00", "データベースエラーです。もう一度お試しください。", http.StatusInternalServerError}
-	ParamNameMissingError    = &UserDefinedError{"GOTA-W-011-00", "パラメータ'name'がありません。", http.StatusBadRequest}
-	ParamPriceMissingError   = &UserDefinedError{"GOTA-W-011-01", "パラメータ'price'がありません。", http.StatusBadRequest}
-	BookNameMissingError     = &UserDefinedError{"GOTA-W-011-02", "本の名前がありません。", http.StatusBadRequest}
-	BookPriceMissingError    = &UserDefinedError{"GOTA-W-011-03", "本の値段がありません。", http.StatusBadRequest}
-	BookNameNotStringError   = &UserDefinedError{"GOTA-W-011-04", "本の名前が文字列ではありません。", http.StatusBadRequest}
-	BookPriceNotIntegerError = &UserDefinedError{"GOTA-W-011-05", "本の値段が整数型ではありません。", http.StatusBadRequest}
-	BookNameEmptyError       = &UserDefinedError{"GOTA-W-011-06", "本の名前が空です。1文字以上書いてください。", http.StatusBadRequest}
-	BookPriceEmptyError      = &UserDefinedError{"GOTA-W-011-07", "本の値段が空です。1文字以上書いてください。", http.StatusBadRequest}
-	BookNameTooLongError     = &UserDefinedError{"GOTA-W-011-08", "本の名前が長すぎます。50文字以内で書いてください。", http.StatusBadRequest}
-	BookPriceTooHighError    = &UserDefinedError{"GOTA-W-011-09", "本の値段が高すぎます。20000円以内で書いてください。", http.StatusBadRequest}
-	InvalidAPIKeyError       = &UserDefinedError{"GOTA-W-021-00", "APIキーが無効です。", http.StatusUnauthorized}
-)
 
-// NewCustomError()は、UserDefinedError型の関数
-// この関数は、エラーコード、エラーメッセージ、HTTPステータスコードを指定して、カスタムエラーを作成する
+  ・・・
+)
 func NewCustomError(errorCode, errorMessage string, httpStatusCode int) *UserDefinedError {
 	return &UserDefinedError{
 		ErrorCode:      errorCode,
@@ -159,6 +214,8 @@ func NewCustomError(errorCode, errorMessage string, httpStatusCode int) *UserDef
 	}
 }
 ```
+
+上の書き方と下の書き方、どっちがいいのだろうか？
 
 ## MySQL
 - MySQLのインストール
@@ -185,4 +242,5 @@ func NewCustomError(errorCode, errorMessage string, httpStatusCode int) *UserDef
   ```
 
 ## ログの追加
+ログレベルを設定し別ファイルにログを保存するようにした。
 ![Log-image](https://github.com/user-attachments/assets/9a0a4aaa-d5d6-4fdd-98ec-316613cdf010)

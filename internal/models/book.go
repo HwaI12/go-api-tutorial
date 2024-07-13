@@ -66,12 +66,8 @@ func (b *Book) CreateBook(db *sql.DB) error {
 
 	// 本のIDを構造体に設定
 	// strconv.FormatIntはint64型を文字列に変換する関数
-	// なぜなら、
 	b.ID = strconv.FormatInt(lastInsertId, 10)
-
-	// 本の作成日時を設定
 	b.CreatedAt = time.Now()
 
-	// エラーが発生した場合はエラーを返す
 	return nil
 }
