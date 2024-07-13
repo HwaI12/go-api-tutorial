@@ -2,7 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -49,8 +53,31 @@ func main() {
 	router := mux.NewRouter()
 	api.RegisterRoutes(router, db)
 
-	entry.Info("サーバーを起動します")
-	if err := http.ListenAndServe(":8080", router); err != nil {
-		entry.WithError(err).Fatal("サーバーの起動に失敗しました")
+	// サーバーシャットダウンの処理
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
 	}
+
+	// サーバー終了時にログを出力
+	defer entry.Info("サーバーが終了しました")
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			entry.WithError(err).Fatal("サーバーの起動に失敗しました")
+		}
+	}()
+	fmt.Printf("http://localhost:8080 でサーバーが起動しました\n")
+
+	// シグナルを待つ
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	// サーバーのシャットダウン
+	entry.Info("サーバーのシャットダウンを開始します")
+	if err := server.Shutdown(context.Background()); err != nil {
+		entry.WithError(err).Fatal("サーバーのシャットダウンに失敗しました")
+	}
+	entry.Info("サーバーのシャットダウンが完了しました")
 }

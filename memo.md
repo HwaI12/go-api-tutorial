@@ -159,3 +159,27 @@ func NewCustomError(errorCode, errorMessage string, httpStatusCode int) *UserDef
 	}
 }
 ```
+
+## MySQL
+- MySQLのインストール
+  ```sh
+  brew install mysql
+  ```
+- MySQLの起動
+  ```sh
+  brew services start mysql
+  ```
+- MySQLの設定
+  ```sh
+  mysql -u root -p
+  ```
+- データベースのテーブルを作成
+  ```sql
+  USE book_db;
+  CREATE TABLE books (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    price INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  ```
