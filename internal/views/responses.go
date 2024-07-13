@@ -18,7 +18,6 @@ type Response struct {
 
 // CreateResponse 関数は、新しいトランザクションを初期化し、その情報を含む Response を生成する。
 func CreateResponse(ctx context.Context, result map[string]interface{}) *Response {
-	ctx = transaction.InitializeTransaction(ctx)
 	trnID := ctx.Value(transaction.TrnIDKey).(string)
 	trnTime := ctx.Value(transaction.TrnTimeKey).(string)
 	return &Response{
@@ -46,7 +45,6 @@ type ExceptionResponse struct {
 
 // CreateExceptionResponse 関数は、新しいトランザクションを初期化し、エラー情報を含む ExceptionResponse を生成する。
 func CreateExceptionResponse(ctx context.Context, exception *errors.UserDefinedError) *ExceptionResponse {
-	ctx = transaction.InitializeTransaction(ctx)
 	trnID := ctx.Value(transaction.TrnIDKey).(string)
 	trnTime := ctx.Value(transaction.TrnTimeKey).(string)
 	return &ExceptionResponse{

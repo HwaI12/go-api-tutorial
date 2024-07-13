@@ -1,18 +1,18 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"os"
 
 	"github.com/HwaI12/go-api-tutorial/internal/errors"
+	"github.com/HwaI12/go-api-tutorial/internal/transaction"
 	"github.com/HwaI12/go-api-tutorial/internal/views"
 )
 
 // APIKeyAuthMiddlewareはAPIキー認証を行うミドルウェアである
 func APIKeyAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background() // 新しいコンテキストを作成
+		ctx := r.Context() // リクエストのコンテキストを使用
 		apiKey := r.Header.Get("X-API-KEY")
 
 		// APIキーが空の場合はエラーレスポンスを返す
@@ -29,5 +29,13 @@ func APIKeyAuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+// トランザクション情報をコンテキストに設定するミドルウェア
+func TransactionMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := transaction.InitializeTransaction(r.Context())
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

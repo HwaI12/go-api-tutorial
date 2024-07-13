@@ -13,6 +13,7 @@ import (
 
 	"github.com/HwaI12/go-api-tutorial/api"
 	"github.com/HwaI12/go-api-tutorial/internal/logger"
+	"github.com/HwaI12/go-api-tutorial/internal/middleware"
 	"github.com/HwaI12/go-api-tutorial/internal/transaction"
 	"github.com/HwaI12/go-api-tutorial/pkg/database"
 )
@@ -20,6 +21,9 @@ import (
 func main() {
 	// ロガーの初期化
 	logger.InitializeLogger()
+
+	// グローバルトランザクションの初期化
+	transaction.InitializeGlobalTransaction()
 
 	// トランザクションの初期化
 	ctx := context.Background()
@@ -46,6 +50,8 @@ func main() {
 
 	entry.Info("ルーティングを設定します")
 	router := mux.NewRouter()
+	router.Use(middleware.TransactionMiddleware) // トランザクションミドルウェアを使用
+	router.Use(middleware.APIKeyAuthMiddleware)  // APIキー認証ミドルウェアを使用
 	api.RegisterRoutes(router, db)
 
 	// サーバーシャットダウンの処理
