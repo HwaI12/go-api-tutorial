@@ -2,23 +2,20 @@ package main
 
 import (
 	"context"
-	"go-api-tutorial/api"
-	"go-api-tutorial/internal/Log"
-	"go-api-tutorial/internal/transaction"
-	"go-api-tutorial/pkg/database"
-
-	"github.com/sirupsen/logrus"
-
-	"log"
 	"net/http"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
+
+	"github.com/HwaI12/go-api-tutorial/api"
+	"github.com/HwaI12/go-api-tutorial/internal/Log"
+	"github.com/HwaI12/go-api-tutorial/internal/transaction"
+	"github.com/HwaI12/go-api-tutorial/pkg/database"
 )
 
 func main() {
-
+	// ロガーの初期化
 	Log.InitializeLogger()
 
 	// トランザクションの初期化
@@ -32,13 +29,28 @@ func main() {
 		"trn_time": ctx.Value(transaction.TrnTimeKey),
 	})
 
+	entry.Info(".envファイルの読み込みを開始します")
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		entry.Error(".envファイルの読み込みに失敗しました")
+	} else {
+		entry.Info(".envファイルの読み込みに成功しました")
 	}
 
-	db := database.Connect()
+	entry.Info("データベースに接続します")
+	db, err := database.Connect()
+	if err != nil {
+		entry.WithError(err).Fatal("データベースへの接続に失敗しました")
+	} else {
+		entry.Info("データベースに接続しました")
+	}
+
+	entry.Info("ルーティングを設定します")
 	router := mux.NewRouter()
 	api.RegisterRoutes(router, db)
-	log.Fatal(http.ListenAndServe(":8080", router))
+
+	entry.Info("サーバーを起動します")
+	if err := http.ListenAndServe(":8080", router); err != nil {
+		entry.WithError(err).Fatal("サーバーの起動に失敗しました")
+	}
 }

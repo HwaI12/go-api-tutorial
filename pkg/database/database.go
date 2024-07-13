@@ -3,20 +3,17 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 )
 
-func Connect() *sql.DB {
+func Connect() (*sql.DB, error) {
 	// .envファイルを読み込む
 	err := godotenv.Load()
-
-	// エラー処理
 	if err != nil {
-		log.Fatalf(".envファイルの読み込みに失敗しました: %v", err)
+		return nil, fmt.Errorf(".envファイルの読み込みに失敗しました: %v", err)
 	}
 
 	// 環境変数が設定されていない場合のエラー処理
@@ -29,12 +26,12 @@ func Connect() *sql.DB {
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }

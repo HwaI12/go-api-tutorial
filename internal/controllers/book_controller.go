@@ -1,5 +1,5 @@
 package controllers
 
-func BookController() {
+func NewbookController() {
 
 }
