@@ -183,3 +183,6 @@ func NewCustomError(errorCode, errorMessage string, httpStatusCode int) *UserDef
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   ```
+
+## ログの追加
+![Log-image](https://github.com/HwaI12/go-api-tutorial/blob/branch-image/img/log_image.pngraw=true)
