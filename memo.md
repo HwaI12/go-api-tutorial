@@ -118,3 +118,36 @@ ListenAndServeとは、指定したアドレスとポートでHTTPサーバを�
 
 #### データベースと連携
 - データベースエラーです。もう一度お試しください。
+
+
+### エラーの定義
+`internal/errors/custom_errors.go`に記載
+
+今の書き方と以下の書き方どっちがいいんだろう
+```go
+var (
+	UnexpectedError          = &UserDefinedError{"GOTA-Z-000-00", "予測不能エラーです", http.StatusInternalServerError}
+	DatabaseError            = &UserDefinedError{"GOTA-X-001-00", "データベースエラーです。もう一度お試しください。", http.StatusInternalServerError}
+	ParamNameMissingError    = &UserDefinedError{"GOTA-W-011-00", "パラメータ'name'がありません。", http.StatusBadRequest}
+	ParamPriceMissingError   = &UserDefinedError{"GOTA-W-011-01", "パラメータ'price'がありません。", http.StatusBadRequest}
+	BookNameMissingError     = &UserDefinedError{"GOTA-W-011-02", "本の名前がありません。", http.StatusBadRequest}
+	BookPriceMissingError    = &UserDefinedError{"GOTA-W-011-03", "本の値段がありません。", http.StatusBadRequest}
+	BookNameNotStringError   = &UserDefinedError{"GOTA-W-011-04", "本の名前が文字列ではありません。", http.StatusBadRequest}
+	BookPriceNotIntegerError = &UserDefinedError{"GOTA-W-011-05", "本の値段が整数型ではありません。", http.StatusBadRequest}
+	BookNameEmptyError       = &UserDefinedError{"GOTA-W-011-06", "本の名前が空です。1文字以上書いてください。", http.StatusBadRequest}
+	BookPriceEmptyError      = &UserDefinedError{"GOTA-W-011-07", "本の値段が空です。1文字以上書いてください。", http.StatusBadRequest}
+	BookNameTooLongError     = &UserDefinedError{"GOTA-W-011-08", "本の名前が長すぎます。50文字以内で書いてください。", http.StatusBadRequest}
+	BookPriceTooHighError    = &UserDefinedError{"GOTA-W-011-09", "本の値段が高すぎます。20000円以内で書いてください。", http.StatusBadRequest}
+	InvalidAPIKeyError       = &UserDefinedError{"GOTA-W-021-00", "APIキーが無効です。", http.StatusUnauthorized}
+)
+
+// NewCustomError()は、UserDefinedError型の関数
+// この関数は、エラーコード、エラーメッセージ、HTTPステータスコードを指定して、カスタムエラーを作成する
+func NewCustomError(errorCode, errorMessage string, httpStatusCode int) *UserDefinedError {
+	return &UserDefinedError{
+		ErrorCode:      errorCode,
+		ErrorMessage:   errorMessage,
+		HTTPStatusCode: httpStatusCode,
+	}
+}
+```
