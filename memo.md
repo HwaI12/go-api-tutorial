@@ -185,4 +185,4 @@ func NewCustomError(errorCode, errorMessage string, httpStatusCode int) *UserDef
   ```
 
 ## ログの追加
-![Log-image](https://raw.githubusercontent.com/HwaI12/go-api-tutorial/blob/branch-image/img/log_image.png?raw=true)
+![Log-image](https://github.com/user-attachments/assets/9a0a4aaa-d5d6-4fdd-98ec-316613cdf010)
