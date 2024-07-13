@@ -1,5 +1,26 @@
 # 学習メモ
 ## ディレクトリ構成
+```sh
+.
+├── api
+│   └── routes.go
+├── cmd
+│   └── myapp
+│       └── main.go
+├── internal
+│   ├── controllers
+│   │   └── book_controller.go
+│   ├── models
+│   │   └── book.go
+│   └── views
+│       └── responses.go
+├── go.mod
+├── go.sum
+├── .env
+└── pkg
+    └── database
+        └── database.go
+```
 - cmd/
   - アプリのエントリーポイント
   - ここではAPIのエントリーポイントを配置
