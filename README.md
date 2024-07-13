@@ -15,8 +15,10 @@
 │   │   └── book_controller.go
 │   ├── models
 │   │   └── book.go
-│   └── views
-│       └── responses.go
+│   ├── views
+│   │   └── responses.go
+│   └── errors
+│       └── custom_errors.go
 ├── go.mod
 ├── go.sum
 ├── .env
