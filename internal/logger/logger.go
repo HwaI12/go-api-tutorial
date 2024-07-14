@@ -10,8 +10,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// カスタムログフォーマッタを定義する構造体
 type CustomFormatter struct{}
 
+// ログエントリをカスタムフォーマットでフォーマットする。
+// エントリのタイムスタンプ、レベル、トランザクションID、トランザクション時間、メッセージを含む。
 func (f *CustomFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	timestamp := time.Now().Format(time.RFC3339)
 	trnID, _ := entry.Data["trn_id"].(string)
@@ -21,6 +24,9 @@ func (f *CustomFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return []byte(logMessage), nil
 }
 
+// ログの初期設定を行う。
+// カスタムフォーマッタを設定し、ログの出力先をファイルにする。
+// ファイルのローテーションも設定する。
 func InitializeLogger() {
 	logrus.SetFormatter(&CustomFormatter{})
 	logrus.SetOutput(&lumberjack.Logger{
@@ -29,9 +35,11 @@ func InitializeLogger() {
 		MaxBackups: 3,
 		MaxAge:     28,
 	})
-	logrus.SetLevel(logrus.DebugLevel) // Debugレベルのログも記録
+	logrus.SetLevel(logrus.DebugLevel) // Debugレベルのログも記録するよう設定
 }
 
+// トランザクション情報を含むログエントリを作成する。
+// コンテキストからトランザクションIDとトランザクション時間を取得し、フィールドとして追加する。
 func WithTransaction(ctx context.Context) *logrus.Entry {
 	trnID, _ := ctx.Value(transaction.TrnIDKey).(string)
 	trnTime, _ := ctx.Value(transaction.TrnTimeKey).(string)

@@ -15,6 +15,7 @@ type Response struct {
 	Result  interface{} `json:"result"`
 }
 
+// 正常なレスポンスを作成して返す
 func CreateResponse(ctx context.Context, result interface{}) *Response {
 	trnID := ctx.Value(transaction.TrnIDKey).(string)
 	trnTime := ctx.Value(transaction.TrnTimeKey).(string)
@@ -25,6 +26,7 @@ func CreateResponse(ctx context.Context, result interface{}) *Response {
 	}
 }
 
+// エラーレスポンスを作成するための構造体
 type ExceptionResponse struct {
 	TrnID   string `json:"trn_id"`
 	TrnTime string `json:"trn_time"`
@@ -34,6 +36,7 @@ type ExceptionResponse struct {
 	} `json:"result"`
 }
 
+// エラーレスポンスを作成して返す
 func CreateExceptionResponse(ctx context.Context, exception *errors.UserDefinedError) *ExceptionResponse {
 	trnID := ctx.Value(transaction.TrnIDKey).(string)
 	trnTime := ctx.Value(transaction.TrnTimeKey).(string)
@@ -50,6 +53,10 @@ func CreateExceptionResponse(ctx context.Context, exception *errors.UserDefinedE
 	}
 }
 
+// エラーレスポンスを返す
+// エラーレスポンスはエラーコードとエラーメッセージを含む
+// エラーコードとエラーメッセージはユーザー定義エラーから取得
+// エラーレスポンスはJSON形式で返す
 func RespondWithError(w http.ResponseWriter, ctx context.Context, err *errors.UserDefinedError) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(err.HTTPStatusCode)
@@ -57,6 +64,9 @@ func RespondWithError(w http.ResponseWriter, ctx context.Context, err *errors.Us
 	json.NewEncoder(w).Encode(response)
 }
 
+// JSON形式のレスポンスを返す
+// レスポンスは正常な場合とエラーの場合がある
+// レスポンスはJSON形式で返す
 func RespondWithJSON(w http.ResponseWriter, ctx context.Context, statusCode int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

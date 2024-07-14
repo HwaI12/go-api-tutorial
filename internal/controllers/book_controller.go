@@ -11,14 +11,17 @@ import (
 	"github.com/HwaI12/go-api-tutorial/internal/views"
 )
 
+// 書籍データに関する操作を行うコントローラー
 type BookController struct {
 	DB *sql.DB
 }
 
+// 新しい BookController を作成して返す
 func NewBookController(db *sql.DB) *BookController {
 	return &BookController{DB: db}
 }
 
+// 新しい書籍データをデータベースに登録するハンドラー
 func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	entry := logger.WithTransaction(ctx)
@@ -54,13 +57,17 @@ func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	entry.Infof("本の登録に成功しました")
 
 	entry.Infof("レスポンスを返却します")
-	views.RespondWithJSON(w, ctx, http.StatusCreated, map[string]interface{}{
+	responseData := map[string]interface{}{
 		"name":  book.Name,
 		"price": book.Price,
-	})
+	}
+	response := views.CreateResponse(ctx, responseData)
+	entry.Debugf("レスポンス結果: %+v", response)
+	views.RespondWithJSON(w, ctx, http.StatusCreated, responseData)
 	entry.Infof("レスポンスの返却に成功しました")
 }
 
+// データベースから書籍データを取得して返すハンドラー
 func (c *BookController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	entry := logger.WithTransaction(ctx)
@@ -92,8 +99,11 @@ func (c *BookController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entry.Infof("レスポンスを返却します")
-	views.RespondWithJSON(w, ctx, http.StatusOK, map[string]interface{}{
+	responseData := map[string]interface{}{
 		"books": bookList,
-	})
+	}
+	response := views.CreateResponse(ctx, responseData)
+	entry.Debugf("レスポンス結果: %+v", response)
+	views.RespondWithJSON(w, ctx, http.StatusOK, responseData)
 	entry.Infof("レスポンスの返却に成功しました")
 }
