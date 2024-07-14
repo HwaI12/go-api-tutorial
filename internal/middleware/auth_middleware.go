@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"os"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/HwaI12/go-api-tutorial/internal/logger"
 	"github.com/HwaI12/go-api-tutorial/internal/transaction"
 	"github.com/HwaI12/go-api-tutorial/internal/views"
+	"github.com/sirupsen/logrus"
 )
 
 // APIKeyAuthMiddlewareはAPIキー認証を行うミドルウェア
@@ -20,16 +22,18 @@ func APIKeyAuthMiddleware(next http.Handler) http.Handler {
 
 		// APIキーが空の場合はエラーレスポンスを返す
 		if apiKey == "" {
-			entry.Error("APIキーが空です")
-			views.RespondWithError(w, ctx, errors.APIKeyEmptyError())
+			err := errors.APIKeyEmptyError()
+			entry.WithError(err).Error("APIキーが空です")
+			logAndRespondWithError(w, ctx, entry, err)
 			return
 		}
 
 		// APIキーが期待される値と異なる場合はエラーレスポンスを返す
 		expectedAPIKey := os.Getenv("API_KEY")
 		if apiKey != expectedAPIKey {
-			entry.Error("APIキーが無効です")
-			views.RespondWithError(w, ctx, errors.InvalidAPIKeyError())
+			err := errors.InvalidAPIKeyError()
+			entry.WithError(err).Error("APIキーが無効です")
+			logAndRespondWithError(w, ctx, entry, err)
 			return
 		}
 
@@ -43,4 +47,12 @@ func TransactionMiddleware(next http.Handler) http.Handler {
 		ctx := transaction.InitializeTransaction(r.Context())
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// logAndRespondWithError はエラーレスポンスを返し、エラーメッセージをログに記録する
+func logAndRespondWithError(w http.ResponseWriter, ctx context.Context, entry *logrus.Entry, err *errors.UserDefinedError) {
+	response := views.CreateExceptionResponse(ctx, err)
+	entry.Debugf("%+v", err)
+	entry.Debugf("レスポンス結果: %+v", response)
+	views.RespondWithError(w, ctx, err)
 }
