@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	error "github.com/HwaI12/go-api-tutorial/internal/error"
+	errors "github.com/HwaI12/go-api-tutorial/internal/error"
 	logger "github.com/HwaI12/go-api-tutorial/internal/log"
 	model "github.com/HwaI12/go-api-tutorial/internal/model"
 	view "github.com/HwaI12/go-api-tutorial/internal/view"
@@ -31,15 +31,27 @@ func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	entry.Infof("リクエストボディのデコードを開始します")
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		entry.Errorf("リクエストボディのデコードに失敗しました: %v", err)
-		view.RespondWithError(w, ctx, error.InvalidRequestError())
+		view.RespondWithError(w, ctx, errors.InvalidRequestError())
 		return
 	}
 	entry.Infof("リクエストボディのデコードに成功しました")
 
-	// 入力データの検証
+	// パラメータの存在チェック
+	if input.Name == nil {
+		entry.Errorf("パラメータ'name'がありません")
+		view.RespondWithError(w, ctx, errors.ParamNameMissingError())
+		return
+	}
+	if input.Price == nil {
+		entry.Errorf("パラメータ'price'がありません")
+		view.RespondWithError(w, ctx, errors.ParamPriceMissingError())
+		return
+	}
+
+	// Book モデルにデータをマッピング
 	book := model.Book{
-		Name:  input.Name,
-		Price: input.Price,
+		Name:  *input.Name,
+		Price: *input.Price,
 	}
 
 	entry.Debugf("入力されたデータ: %+v", map[string]interface{}{
@@ -50,7 +62,7 @@ func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	entry.Infof("バリデーションを開始します")
 	if err := book.Validate(ctx); err != nil {
 		entry.Errorf("バリデーションに失敗しました: %v", err)
-		view.RespondWithError(w, ctx, err.(*error.UserDefinedError))
+		view.RespondWithError(w, ctx, err.(*errors.UserDefinedError))
 		return
 	}
 	entry.Infof("バリデーションに成功しました")
@@ -58,7 +70,7 @@ func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	entry.Infof("本の登録を開始します")
 	if err := book.CreateBook(ctx, c.DB); err != nil {
 		entry.Errorf("本の登録に失敗しました: %v", err)
-		view.RespondWithError(w, ctx, err.(*error.UserDefinedError))
+		view.RespondWithError(w, ctx, err.(*errors.UserDefinedError))
 		return
 	}
 	entry.Infof("本の登録に成功しました")
@@ -84,13 +96,13 @@ func (c *BookController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	books, err := model.GetBooks(ctx, c.DB)
 	if err != nil {
 		entry.Errorf("本の一覧取得に失敗しました: %v", err)
-		view.RespondWithError(w, ctx, err.(*error.UserDefinedError))
+		view.RespondWithError(w, ctx, err.(*errors.UserDefinedError))
 		return
 	}
 
 	if len(books) == 0 {
 		entry.Warnf("取得するデータがありません")
-		view.RespondWithError(w, ctx, error.NoDataFoundError())
+		view.RespondWithError(w, ctx, errors.NoDataFoundError())
 		return
 	}
 	entry.Infof("本の一覧取得に成功しました")
@@ -102,7 +114,7 @@ func (c *BookController) GetBooks(w http.ResponseWriter, r *http.Request) {
 			"id":         book.ID,
 			"name":       book.Name,
 			"price":      book.Price,
-			"created_at": book.CreatedAt.Format("2006-01-02 15:04:05"),
+			"created_at": book.CreatedAt.Format("2000-01-01 00:00:00"),
 		}
 	}
 

@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"context"
@@ -17,32 +17,14 @@ type Book struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// JSONからBookを作成する際に使用する中間構造体
 type BookInput struct {
-	Name  string `json:"name"`
-	Price int    `json:"price"`
+	Name  *string `json:"name"`
+	Price *int    `json:"price"`
 }
 
 // Validate は Book モデルの検証を行う
 func (b *Book) Validate(ctx context.Context) error {
 	entry := logger.WithTransaction(ctx)
-
-	params := map[string]interface{}{
-		"name":  b.Name,
-		"price": b.Price,
-	}
-	for param, value := range params {
-		if value == nil {
-			entry.Errorf("パラメータ'%s'がありません", param)
-			switch param {
-			case "name":
-				return errors.ParamNameMissingError()
-			case "price":
-				return errors.ParamPriceMissingError()
-			}
-		}
-		entry.Infof("パラメータ'%s'が存在することを確認しました", param)
-	}
 
 	if b.Name == "" {
 		entry.Errorf("パラメータ'name'が空です。本の名前を入力してください")
