@@ -99,8 +99,8 @@ func BookNameEmptyError() *UserDefinedError {
 	return &UserDefinedError{"VAL-400-06", "本の名前が空です。1文字以上書いてください", http.StatusBadRequest}
 }
 
-func BookPriceEmptyError() *UserDefinedError {
-	return &UserDefinedError{"VAL-400-07", "本の値段が空です。1文字以上書いてください", http.StatusBadRequest}
+func BookPriceZeroError() *UserDefinedError {
+	return &UserDefinedError{"VAL-400-07", "本の値段が0です。1以上の値を書いてください", http.StatusBadRequest}
 }
 
 func BookNameTooLongError() *UserDefinedError {

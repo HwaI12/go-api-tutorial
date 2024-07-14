@@ -17,27 +17,64 @@ type Book struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Validate は Book モデルの検証を行う
 func (b *Book) Validate(ctx context.Context) error {
 	entry := logger.WithTransaction(ctx)
 
+	// パラメータの存在チェック
+	params := map[string]interface{}{
+		"name":  b.Name,
+		"price": b.Price,
+	}
+	for param, value := range params {
+		if value == nil || value == "" || value == 0 {
+			entry.Errorf("パラメータ'%s'がありません", param)
+			switch param {
+			case "name":
+				return errors.ParamNameMissingError()
+			case "price":
+				return errors.ParamPriceMissingError()
+			}
+		}
+		entry.Infof("パラメータ'%s'が存在することを確認しました", param)
+	}
+
+	// パラメータNameの値が文字列でない場合
+	if _, ok := interface{}(b.Name).(string); !ok {
+		entry.Errorf("本の名前が文字列ではありません")
+		return errors.BookNameNotStringError()
+	}
+	entry.Infof("パラメータ'name'が文字列であることを確認しました")
+
+	// パラメータPriceの値が整数型でない場合
+	if _, ok := interface{}(b.Price).(int); !ok {
+		entry.Errorf("本の値段が整数型ではありません")
+		return errors.BookPriceNotIntegerError()
+	}
+	entry.Infof("パラメータ'price'が整数型であることを確認しました")
+
+	// bのパラメータにNameは存在するが空の場合
 	if b.Name == "" {
 		entry.Errorf("本の名前が空です")
 		return errors.BookNameEmptyError()
 	}
 	entry.Infof("本の名前が空でないことを確認しました")
 
+	// bのパラメータにPriceが存在するが空の場合
+	if b.Price == 0 {
+		entry.Errorf("本の価格が0です")
+		return errors.BookPriceZeroError()
+	}
+	entry.Infof("本の価格が0でないことを確認しました")
+
+	// bのパラメータにNameは存在するが50文字以上の場合
 	if len(b.Name) > 50 {
 		entry.Errorf("本の名前が長すぎます")
 		return errors.BookNameTooLongError()
 	}
 	entry.Infof("本の名前が50文字以内であることを確認しました")
 
-	if b.Price <= 0 {
-		entry.Errorf("本の価格が空です")
-		return errors.BookPriceEmptyError()
-	}
-	entry.Infof("本の価格が空でないことを確認しました")
-
+	// bのパラメータにPriceが存在するが20000より大きい場合
 	if b.Price > 20000 {
 		entry.Errorf("本の価格が高すぎます")
 		return errors.BookPriceTooHighError()
