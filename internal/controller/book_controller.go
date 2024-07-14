@@ -87,7 +87,7 @@ func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	entry.Infof("レスポンスの返却に成功しました")
 }
 
-// データベースから書籍データを取得して返すハンドラー
+// GetBooks はデータベースから書籍データを取得して返すハンドラー
 func (c *BookController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	entry := logger.WithTransaction(ctx)
@@ -114,7 +114,7 @@ func (c *BookController) GetBooks(w http.ResponseWriter, r *http.Request) {
 			"id":         book.ID,
 			"name":       book.Name,
 			"price":      book.Price,
-			"created_at": book.CreatedAt.Format("2000-01-01 00:00:00"),
+			"created_at": book.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
 	}
 
@@ -124,7 +124,6 @@ func (c *BookController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	}
 	response := view.CreateResponse(ctx, responseData)
 	entry.Debugf("レスポンス結果: %+v", response)
-	fmt.Printf("レスポンス結果: %+v", response)
 	view.RespondWithJSON(w, ctx, http.StatusOK, responseData)
 	entry.Infof("レスポンスの返却に成功しました")
 }

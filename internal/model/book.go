@@ -57,7 +57,6 @@ func (b *Book) Validate(ctx context.Context) error {
 	return nil
 }
 
-// GetBooks はデータベースから書籍を取得する
 func GetBooks(ctx context.Context, db *sql.DB) ([]Book, error) {
 	entry := logger.WithTransaction(ctx)
 
@@ -74,11 +73,20 @@ func GetBooks(ctx context.Context, db *sql.DB) ([]Book, error) {
 	books := []Book{}
 	for rows.Next() {
 		var book Book
-		err := rows.Scan(&book.ID, &book.Name, &book.Price, &book.CreatedAt)
+		var createdAt string
+		err := rows.Scan(&book.ID, &book.Name, &book.Price, &createdAt)
 		if err != nil {
 			entry.Errorf("データベース結果のスキャンに失敗しました: %v", err)
 			return nil, errors.DatabaseScanError()
 		}
+
+		// 文字列からtime.Timeへの変換
+		book.CreatedAt, err = time.Parse("2006-01-02 15:04:05", createdAt)
+		if err != nil {
+			entry.Errorf("作成日時の変換に失敗しました: %v", err)
+			return nil, errors.DatabaseScanError()
+		}
+
 		books = append(books, book)
 	}
 	entry.Infof("データベース結果のスキャンに成功しました")
