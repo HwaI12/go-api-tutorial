@@ -4,37 +4,37 @@
 ## メモ
 [memo.md](https://github.com/HwaI12/go-api-tutorial/blob/main/memo.md)
 
-## ディレクトリ構成
-```sh
-.
-├── README.md
-├── api
-│   └── routes.go
-├── cmd
-│   └── myapp
-│       └── main.go
-├── go.mod
-├── go.sum
-├── internal
-│   ├── Log
-│   │   └── logger.go
-│   ├── controllers
-│   │   └── book_controller.go
-│   ├── errors
-│   │   └── custom_errors.go
-│   ├── middleware
-│   │   └── auth_middleware.go
-│   ├── models
-│   │   └── book.go
-│   ├── transaction
-│   │   └── transaction.go
-│   └── views
-│       └── responses.go
-├── memo.md
-└── pkg
-    └── database
-        └── database.go
-```
+## 利用方法
+1. リポジトリをクローン
+    ```sh
+    git clone https://github.com/HwaI12/go-api-tutorial.git
+    ```
+2. .envファイルを追加
+   1. [.envファイル](#envファイル)に記載
+3. テーブルを作成
+   1. [MySQL](https://github.com/HwaI12/go-api-tutorial/blob/main/memo.md#mysql)に記載
+4. サーバを起動
+    ```sh
+    go run cmd/myapp/main.go
+    ```
+5. curlコマンドを実行
+   1. データの挿入
+        ```sh
+        curl -X POST http://localhost:8080/books -H \
+        "Content-Type: application/json" \
+                -H "X-API-KEY: <API_KEY>" \
+                -d '{
+            "name": "残響のテロル",
+            "price": 3035
+        }'
+        ```
+    2. 全てのデータの取得
+        ```sh
+        curl -X GET http://localhost:8080/books \
+            -H "Content-Type: application/json" \
+            -H "X-API-KEY: <API_KEY>"
+        ```
+
 ## .envファイル
 ```.env
 DB_USER=root # データベースユーザー名

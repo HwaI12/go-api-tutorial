@@ -50,6 +50,14 @@ func LastInsertIDError() *UserDefinedError {
 	return &UserDefinedError{"DB-ERR-500-06", "最後に挿入されたIDの取得に失敗しました", http.StatusInternalServerError}
 }
 
+func DatabaseSelectError() *UserDefinedError {
+	return &UserDefinedError{"DB-ERR-500-07", "データベースからの取得に失敗しました", http.StatusInternalServerError}
+}
+
+func NoDataFoundError() *UserDefinedError {
+	return &UserDefinedError{"DB-ERR-404-00", "取得するデータがありません。", http.StatusNotFound}
+}
+
 func ParamNameMissingError() *UserDefinedError {
 	return &UserDefinedError{"VAL-ERR-400-00", "パラメータ'name'がありません。", http.StatusBadRequest}
 }
