@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/HwaI12/go-api-tutorial/api"
-	"github.com/HwaI12/go-api-tutorial/internal/logger"
+	logger "github.com/HwaI12/go-api-tutorial/internal/log"
 	"github.com/HwaI12/go-api-tutorial/internal/middleware"
 	"github.com/HwaI12/go-api-tutorial/internal/transaction"
 	"github.com/HwaI12/go-api-tutorial/pkg/database"

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/HwaI12/go-api-tutorial/internal/errors"
-	"github.com/HwaI12/go-api-tutorial/internal/logger"
+	errors "github.com/HwaI12/go-api-tutorial/internal/error"
+	logger "github.com/HwaI12/go-api-tutorial/internal/log"
 )
 
 type Book struct {

@@ -9,7 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 
-	"github.com/HwaI12/go-api-tutorial/internal/logger"
+	logger "github.com/HwaI12/go-api-tutorial/internal/log"
 )
 
 func Connect(ctx context.Context) (*sql.DB, error) {

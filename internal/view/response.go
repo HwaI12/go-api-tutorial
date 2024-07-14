@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/HwaI12/go-api-tutorial/internal/errors"
+	errors "github.com/HwaI12/go-api-tutorial/internal/error"
 	"github.com/HwaI12/go-api-tutorial/internal/transaction"
 )
 
