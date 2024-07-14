@@ -12,13 +12,12 @@ type UserDefinedError struct {
 	HTTPStatusCode int    `json:"-"`
 }
 
-// Error メソッドは UserDefinedError をエラーメッセージとしてフォーマットします
+// Error メソッドは UserDefinedError をエラーメッセージとしてフォーマットする
 func (e *UserDefinedError) Error() string {
 	return fmt.Sprintf("[%d] [%s] %s", e.HTTPStatusCode, e.ErrorCode, e.ErrorMessage)
 }
 
 // 各エラーに対応する関数を定義
-
 func UnexpectedError() *UserDefinedError {
 	return &UserDefinedError{"BUSN-ERR-500-00", "予測不能エラーです", http.StatusInternalServerError}
 }
@@ -97,4 +96,8 @@ func APIKeyEmptyError() *UserDefinedError {
 
 func InvalidAPIKeyError() *UserDefinedError {
 	return &UserDefinedError{"AUTH-ERR-401-01", "APIキーが無効です。", http.StatusUnauthorized}
+}
+
+func InvalidRequestError() *UserDefinedError {
+	return &UserDefinedError{"VAL-ERR-400-10", "リクエストボディのデコードに失敗しました", http.StatusBadRequest}
 }

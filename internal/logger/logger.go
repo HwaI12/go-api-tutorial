@@ -10,8 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var Log *logrus.Logger
-
 type CustomFormatter struct{}
 
 func (f *CustomFormatter) Format(entry *logrus.Entry) ([]byte, error) {
@@ -24,26 +22,20 @@ func (f *CustomFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 func InitializeLogger() {
-	Log = logrus.New()
-	Log.SetFormatter(&CustomFormatter{})
-	Log.SetOutput(&lumberjack.Logger{
+	logrus.SetFormatter(&CustomFormatter{})
+	logrus.SetOutput(&lumberjack.Logger{
 		Filename:   "logs/testlogfile.log",
 		MaxSize:    500,
 		MaxBackups: 3,
 		MaxAge:     28,
 	})
+	logrus.SetLevel(logrus.DebugLevel) // Debugレベルのログも記録
 }
 
 func WithTransaction(ctx context.Context) *logrus.Entry {
-	trnID, ok := ctx.Value(transaction.TrnIDKey).(string)
-	if !ok {
-		trnID = "unknown"
-	}
-	trnTime, ok := ctx.Value(transaction.TrnTimeKey).(string)
-	if !ok {
-		trnTime = "unknown"
-	}
-	return Log.WithFields(logrus.Fields{
+	trnID, _ := ctx.Value(transaction.TrnIDKey).(string)
+	trnTime, _ := ctx.Value(transaction.TrnTimeKey).(string)
+	return logrus.WithFields(logrus.Fields{
 		"trn_id":   trnID,
 		"trn_time": trnTime,
 	})

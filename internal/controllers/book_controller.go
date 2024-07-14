@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/HwaI12/go-api-tutorial/internal/errors"
 	"github.com/HwaI12/go-api-tutorial/internal/logger"
 	"github.com/HwaI12/go-api-tutorial/internal/models"
+	"github.com/HwaI12/go-api-tutorial/internal/views"
 )
 
 type BookController struct {
@@ -17,40 +19,32 @@ func NewBookController(db *sql.DB) *BookController {
 	return &BookController{DB: db}
 }
 
-func (bc *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
+func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	entry := logger.WithTransaction(ctx)
 
-	entry.Info("リクエストを受信しました")
-
 	var book models.Book
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
-		entry.WithError(err).Error("リクエストボディのデコードに失敗しました")
-		http.Error(w, "無効なリクエストボディです", http.StatusBadRequest)
+		entry.Errorf("リクエストボディのデコードに失敗しました: %v", err)
+		views.RespondWithError(w, ctx, errors.InvalidRequestError())
 		return
 	}
 
-	entry.Debug("リクエストボディのデコードに成功しました")
-
-	if err := book.Validate(); err != nil {
-		entry.WithError(err).Warn("バリデーションエラー")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := book.Validate(ctx); err != nil {
+		entry.Errorf("バリデーションに失敗しました: %v", err)
+		views.RespondWithError(w, ctx, err.(*errors.UserDefinedError))
 		return
 	}
 
-	entry.Debug("バリデーションに成功しました")
-
-	if err := book.CreateBook(bc.DB); err != nil {
-		entry.WithError(err).Error("本の作成に失敗しました")
-		http.Error(w, "本の作成に失敗しました", http.StatusInternalServerError)
+	if err := book.CreateBook(ctx, c.DB); err != nil {
+		entry.Errorf("本の登録に失敗しました: %v", err)
+		views.RespondWithError(w, ctx, err.(*errors.UserDefinedError))
 		return
 	}
 
-	entry.Info("本の作成に成功しました")
-
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(book); err != nil {
-		entry.WithError(err).Error("レスポンスのエンコードに失敗しました")
-	}
-	entry.Debug("レスポンスを送信しました")
+	entry.Info("本の登録に成功しました")
+	views.RespondWithJSON(w, ctx, http.StatusCreated, map[string]interface{}{
+		"name":  book.Name,
+		"price": book.Price,
+	})
 }

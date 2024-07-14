@@ -17,7 +17,7 @@ func APIKeyAuthMiddleware(next http.Handler) http.Handler {
 
 		// APIキーが空の場合はエラーレスポンスを返す
 		if apiKey == "" {
-			views.RespondWithError(w, ctx, errors.InvalidAPIKeyError())
+			views.RespondWithError(w, ctx, errors.APIKeyEmptyError())
 			return
 		}
 
