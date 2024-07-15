@@ -24,8 +24,8 @@
         "Content-Type: application/json" \
                 -H "X-API-KEY: <API_KEY>" \
                 -d '{
-            "name": "残響のテロル",
-            "price": 3035
+            "name": "リーダブルコード",
+            "price": 2640
         }'
         ```
     2. 全てのデータの取得
@@ -38,9 +38,9 @@
 ## .envファイル
 ```.env
 DB_USER=root # データベースユーザー名
-DB_PASSWORD=sample123 # データベースパスワード
+DB_PASSWORD=your_mysql_password # データベースパスワード
 DB_NAME=book_db # データベース名
 DB_HOST=localhost # データベースホスト名またはIPアドレス
 DB_PORT=3306 # データベースポート番号
-API_KEY=123456789 # APIキー
+API_KEY=your_api_key # APIキー
 ```

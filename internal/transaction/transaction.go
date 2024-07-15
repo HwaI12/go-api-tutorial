@@ -23,7 +23,6 @@ type TransactionInfo struct {
 var globalTransaction *TransactionInfo
 
 // グローバルトランザクション情報を初期化する
-// トランザクションIDとトランザクション時間を生成して設定する
 func InitializeGlobalTransaction() {
 	globalTransaction = &TransactionInfo{
 		TrnID:   uuid.New().String(),
@@ -32,14 +31,11 @@ func InitializeGlobalTransaction() {
 }
 
 // 現在のグローバルトランザクション情報を取得する
-// グローバルトランザクション情報のポインタを返す
 func GetGlobalTransaction() *TransactionInfo {
 	return globalTransaction
 }
 
 // コンテキストにトランザクション情報を設定する。
-// グローバルトランザクション情報が存在しない場合、初期化
-// トランザクションIDとトランザクション時間をコンテキストに設定して返す
 func InitializeTransaction(ctx context.Context) context.Context {
 	if globalTransaction == nil {
 		InitializeGlobalTransaction()
